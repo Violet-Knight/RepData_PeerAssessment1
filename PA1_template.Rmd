@@ -80,9 +80,9 @@ intervalWeekends <- summarize(group_by(rawdatanona[rawdatanona$weekday == "weeke
 names(intervalWeekdays) <- c("interval", "mean")
 names(intervalWeekends) <- c("interval", "mean")
 
-intervalWeekends <- mutate(intervalAverage,
+intervalWeekends <- mutate(intervalWeekends,
                           fixedints = (floor(interval / 100) * 60) + (interval %% 100))
-intervalWeekdays <- mutate(intervalAverage,
+intervalWeekdays <- mutate(intervalWeekdays,
                           fixedints = (floor(interval / 100) * 60) + (interval %% 100))
 
 ## And make the plot!
