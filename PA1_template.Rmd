@@ -8,8 +8,9 @@ output:
 
 ## Loading and preprocessing the data
 
-```{r loading,echo=TRUE,cache=TRUE}
+```{r loading,echo=TRUE}
 rawdata <- read.csv("activity.csv")
+rawdata$date <- as.Date(rawdata$date)
 ```
 
 ## What is mean total number of steps taken per day?
@@ -42,7 +43,7 @@ with(intervalAverage, plot(x=fixedints, y=mean, type="l",
 
 ## Imputing missing values
 
-```{r = missing, echo=TRUE, cache=TRUE}
+```{r = missing, echo=TRUE}
 ## Calculate number of missing values.
 sum(is.na(rawdata$steps))
 ## Replace all the missing values with the mean number of steps for that interval
@@ -54,11 +55,38 @@ for(i in 1:nrow(rawdatanona)) {
    rawdatanona[i,]$steps)
 }
 ## And repeat the earlier process to draw a new histogram
-dailySums <- summarize(group_by(rawdatanona, date), sum(nona))
-names(dailySums) <- c("date", "sum")
-hist(dailySums$sum, breaks=20, main="Number of steps taken per day", xlab="Number of steps")
-mean(dailySums$sum, na.rm=TRUE)
-median(dailySums$sum, na.rm=TRUE)
+dailySumsNona <- summarize(group_by(rawdatanona, date), sum(nona))
+names(dailySumsNona) <- c("date", "sum")
+hist(dailySumsNona$sum, breaks=20, main="Number of steps taken per day", xlab="Number of steps")
+mean(dailySumsNona$sum, na.rm=TRUE)
+median(dailySumsNona$sum, na.rm=TRUE)
 ```
 
+There is no difference in the mean, but a slight one in the median. It appears that NA values only appear when the entire day is nothing but NA values, so those days' sums are replaced with the mean value. That leaves no difference in the mean across days, but brings the median up to the mean.
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r weekday, echo=TRUE}
+## Create factor variable for weekday/weekend
+rawdatanona$date <- as.Date(rawdatanona$date)
+rawdatanona <- mutate(rawdatanona, day = weekdays(date))
+rawdatanona <- mutate(rawdatanona, weekday =
+               as.factor(ifelse(day %in% c("Saturday","Sunday"), "weekend", "weekday")))
+## Calculate 5-minute interval averages for weekdays and for weekends
+intervalWeekdays <- summarize(group_by(rawdatanona[rawdatanona$weekday == "weekday",], interval), mean(nona))
+intervalWeekends <- summarize(group_by(rawdatanona[rawdatanona$weekday == "weekend",], interval), mean(nona))
+
+## Make names more legible
+names(intervalWeekdays) <- c("interval", "mean")
+names(intervalWeekends) <- c("interval", "mean")
+
+intervalWeekends <- mutate(intervalAverage,
+                          fixedints = (floor(interval / 100) * 60) + (interval %% 100))
+intervalWeekdays <- mutate(intervalAverage,
+                          fixedints = (floor(interval / 100) * 60) + (interval %% 100))
+
+## And make the plot!
+par(mfrow=c(2,1), mar=c(2,2,2,2))
+with(intervalWeekdays, plot(x=fixedints, y=mean, type="l", main="Weekdays"))
+with(intervalWeekends, plot(x=fixedints, y=mean, type="l", main="Weekends"))
+```
