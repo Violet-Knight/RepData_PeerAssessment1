@@ -1,35 +1,50 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
-```{r loading,echo=TRUE,cache=TRUE}
+
+```r
 rawdata <- read.csv("activity.csv")
 ```
 
 ## What is mean total number of steps taken per day?
 
-```{r dplyr,message=FALSE}
+
+```r
 ## (Loading dplyr in a separate chunk because it produces a lot of messages on my system.)
 library(dplyr)
 ```
 
-```{r means,echo=TRUE}
+
+```r
 dailySums <- summarize(group_by(rawdata, date), sum(steps))
 names(dailySums) <- c("date", "sum")
 hist(dailySums$sum, breaks=20, main="Number of steps taken per day", xlab="Number of steps")
+```
+
+![](PA1_template_files/figure-html/means-1.png) 
+
+```r
 mean(dailySums$sum, na.rm=TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(dailySums$sum, na.rm=TRUE)
+```
+
+```
+## [1] 10765
 ```
 
 ## What is the average daily activity pattern?
 
-```{r = dailypattern, echo=TRUE}
+
+```r
 intervalAverage <- summarize(group_by(rawdata, interval), mean(steps, na.rm=TRUE))
 names(intervalAverage) <- c("interval", "mean")
 
@@ -40,11 +55,21 @@ with(intervalAverage, plot(x=fixedints, y=mean, type="l",
      main="Number of steps per interval", xlab="Interval", ylab="Number of steps"))
 ```
 
+![](PA1_template_files/figure-html/= dailypattern-1.png) 
+
 ## Imputing missing values
 
-```{r = missing, echo=TRUE, cache=TRUE}
+
+```r
 ## Calculate number of missing values.
 sum(is.na(rawdata$steps))
+```
+
+```
+## [1] 2304
+```
+
+```r
 ## Replace all the missing values with the mean number of steps for that interval
 rawdatanona <- rawdata
 rawdatanona$nona <- 0
@@ -57,8 +82,24 @@ for(i in 1:nrow(rawdatanona)) {
 dailySums <- summarize(group_by(rawdatanona, date), sum(nona))
 names(dailySums) <- c("date", "sum")
 hist(dailySums$sum, breaks=20, main="Number of steps taken per day", xlab="Number of steps")
+```
+
+![](PA1_template_files/figure-html/= missing-1.png) 
+
+```r
 mean(dailySums$sum, na.rm=TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(dailySums$sum, na.rm=TRUE)
+```
+
+```
+## [1] 10766.19
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
